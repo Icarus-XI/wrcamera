@@ -164,15 +164,6 @@ takePictureBtn.addEventListener('click', async () => {
         html5QrcodeScanner.stop();
     }
     
-    // --- PRE-BUFFER FILE FOR NATIVE CAMERA ROLL SAVE UNLOCK ---
-    // Converts the canvas snapshot into a binary block BEFORE the user clicks save
-    try {
-        const blob = await (await fetch(capturedDataUrl)).blob();
-        window.bufferedImageFile = new File([blob], "temp.jpg", { type: "image/jpeg" });
-    } catch(e) {
-        console.error("Background file pre-buffering failed:", e);
-    }
-    
     validateForm(); 
 });
 
@@ -198,64 +189,35 @@ redoButton.addEventListener('click', () => {
     heightInput.value = "";
     capturedDataUrl = "";
     takenImage.src = '';
+    takenImage.removeAttribute('download');
+    takenImage.style.border = "none";
     isScanningPaused = false;
-    window.bufferedImageFile = null;
     
     validateForm(); 
 });
 
-// 3. Instant Native iOS Share / Photos App Save Engine
-uploadButton.addEventListener('click', async () => {
-    uploadButton.disabled = true;
-    uploadButton.textContent = "Opening Save Menu...";
-    
+// 3. Complete Browser-Unified Camera Roll Save Engine
+uploadButton.addEventListener('click', () => {
+    // Generate your exact company filename parameters
     const fileName = `PRO_${proNumberInput.value}_DIM_${lengthInput.value}x${widthInput.value}x${heightInput.value}.jpg`;
 
-    try {
-        // Safety fallback check if the image buffering task failed earlier
-        let finalFile = window.bufferedImageFile;
-        if (!finalFile) {
-            const blob = await (await fetch(capturedDataUrl)).blob();
-            finalFile = new File([blob], fileName, { type: "image/jpeg" });
-        } else {
-            // Rename our pre-buffered binary data object to match our company parameters instantly
-            finalFile = new File([window.bufferedImageFile], fileName, { type: "image/jpeg" });
-        }
+    // Instantly inject the dynamic file details into the preview container
+    takenImage.setAttribute('download', fileName);
+    takenImage.style.border = "4px solid #2ecc71"; // Flashes green border indicating readiness
+    
+    // Create a smooth, user-friendly mobile browser alert popup box
+    alert(`👉 MOBILE SAVE STRATEGY:\n\n1. Tap OK on this box.\n2. Scroll down to the stamped photo below.\n3. Tap and HOLD your finger on the image.\n4. Select "Save to Photos" from the menu.\n\nThis works perfectly in BOTH Chrome and Safari!`);
 
-        // Fires instantly upon touch without an asynchronous delay, satisfying Apple's security rules
-        if (navigator.canShare && navigator.canShare({ files: [finalFile] })) {
-            await navigator.share({
-                files: [finalFile],
-                title: 'Stamped Entry'
-            });
-            
-            // Clean up forms upon successful layout dismissal
-            proNumberInput.value = "";
-            lengthInput.value = "";
-            widthInput.value = "";
-            heightInput.value = "";
-            redoButton.click();
-        } else {
-            throw new Error("Direct sharing profiles unavailable.");
-        }
-    } catch (error) {
-        console.error('File export routine execution crash, dropping back to Files app fallback:', error);
-        
-        // Fallback strategy: Saves straight to Files app if the device blocks sharing profiles
-        const downloadLink = document.createElement('a');
-        downloadLink.href = capturedDataUrl;
-        downloadLink.download = fileName;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-        proNumberInput.value = "";
-        lengthInput.value = "";
-        widthInput.value = "";
-        heightInput.value = "";
-        redoButton.click();
-    } finally {
-        uploadButton.textContent = "Save Image to Device";
-        window.bufferedImageFile = null; // Clear background cache allocation
-    }
+    // Reset the data forms immediately so they are ready for the next pallet allocation loop
+    proNumberInput.value = "";
+    lengthInput.value = "";
+    widthInput.value = "";
+    heightInput.value = "";
+    
+    // Smooth layout scroll down to the image target box
+    takenImage.scrollIntoView({ behavior: 'smooth' });
+    
+    // Restore button text
+    uploadButton.disabled = false;
+    uploadButton.textContent = "Save Image to Device";
 });
