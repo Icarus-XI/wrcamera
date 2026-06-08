@@ -121,8 +121,8 @@ button:disabled {
 
 /* --- APPLE MOBILE VIEWPORT FIXES --- */
 
-/* Force the scanner library's default unstyled buttons and texts to hide */
-#camera-feed button {
+/* TARGETED FIX: Only hide buttons created by the scanner library, NOT your blue button */
+#qr-inner-video button {
     display: none !important;
 }
 
