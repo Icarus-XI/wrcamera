@@ -168,7 +168,6 @@ takePictureBtn.addEventListener('click', () => {
 });
 
 redoButton.addEventListener('click', () => {
-    // If a scanner task loop was running, make sure it shuts down safely first
     if(html5QrcodeScanner) {
         try {
             html5QrcodeScanner.stop();
@@ -195,26 +194,51 @@ redoButton.addEventListener('click', () => {
     validateForm(); 
 });
 
-// Native iOS File Export Interfacing
-uploadButton.addEventListener('click', () => {
+// Native iOS Save to Photos Gallery / Share Event
+uploadButton.addEventListener('click', async () => {
     uploadButton.disabled = true;
-    uploadButton.textContent = "Saving to Device Files...";
+    uploadButton.textContent = "Processing Image...";
 
     const fileName = `PRO_${proNumberInput.value}_DIM_${lengthInput.value}x${widthInput.value}x${heightInput.value}.jpg`;
 
-    const downloadLink = document.createElement('a');
-    downloadLink.href = capturedDataUrl;
-    downloadLink.download = fileName;
+    try {
+        // Convert your canvas dataURL string back into a real binary file stream object
+        const blob = await (await fetch(capturedDataUrl)).blob();
+        const file = new File([blob], fileName, { type: "image/jpeg" });
 
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-
-    alert('Stamped image exported directly to local iPhone Storage!');
-    
-    proNumberInput.value = "";
-    lengthInput.value = "";
-    widthInput.value = "";
-    heightInput.value = "";
-    redoButton.click();
+        // Check if the current phone browser supports direct OS sharing profiles
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: 'Stamped Pallet Entry',
+                text: `Freight Record: ${fileName}`
+            });
+            
+            // Wipe form fields and reset loop layouts immediately upon sheet dismissal
+            proNumberInput.value = "";
+            lengthInput.value = "";
+            widthInput.value = "";
+            heightInput.value = "";
+            redoButton.click();
+        } else {
+            // Fallback strategy for older iOS browser iterations (Files app saving)
+            const downloadLink = document.createElement('a');
+            downloadLink.href = capturedDataUrl;
+            downloadLink.download = fileName;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            alert('Exported directly to Files app downloads folder.');
+            
+            proNumberInput.value = "";
+            lengthInput.value = "";
+            widthInput.value = "";
+            heightInput.value = "";
+            redoButton.click();
+        }
+    } catch (error) {
+        console.error('Mobile share initialization aborted:', error);
+        uploadButton.disabled = false;
+        uploadButton.textContent = "Save Image to Device";
+    }
 });
