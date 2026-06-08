@@ -15,8 +15,10 @@
 <body>
     <h1>W&R Camera</h1>
     <div class="scanner-form">
-        <!-- Rigid dimensions container required by iOS WebKit engine to render video -->
-        <div id="camera-feed" style="width: 100%; max-width: 500px; height: 380px; background: #222; margin: 0 auto; border-radius: 6px;"></div>
+        <!-- Structural layout block for the auto-scanner engine with activation prompt -->
+        <div id="camera-feed" style="width: 100%; max-width: 500px; height: 380px; background: #222; margin: 0 auto; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+            <button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button>
+        </div>
         
         <button id="take-picture-btn">Take Picture</button>
         <button id="redo-button">Redo</button>
