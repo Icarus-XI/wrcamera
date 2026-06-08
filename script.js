@@ -28,54 +28,68 @@ function validateForm() {
     input.addEventListener('input', validateForm);
 });
 
-// Auto-Scan Routine Mapping with Manual Interaction Lock
+// Auto-Scan Routine Mapping with Hardcoded Rear-Lens ID Lock
 function startQrScanner() {
     // Clear out the starting button text before mounting the viewfinder
     cameraFeed.innerHTML = "";
     
     html5QrcodeScanner = new Html5Qrcode("camera-feed");
     
-    html5QrcodeScanner.start(
-        { facingMode: "environment" }, // Focuses execution via back-facing lenses
-        {
-            fps: 10,       
-            qrbox: 250,
-            videoConstraints: {
-                mandatory: {
-                    playsInline: true
+    // Query the iPhone's actual physical camera hardware components directly
+    Html5Qrcode.getCameras().then(cameras => {
+        if (cameras && cameras.length > 0) {
+            // Step 1: Search the list for a camera explicitly named "back" or "rear"
+            let rearCamera = cameras.find(cam => cam.label.toLowerCase().includes('back') || cam.label.toLowerCase().includes('rear'));
+            
+            // Step 2: Fallback shortcut - pick the absolute last camera in the list (on iPhones, this is always a rear lens)
+            let cameraIdToUse = rearCamera ? rearCamera.id : cameras[cameras.length - 1].id;
+            
+            // Step 3: Initialize the camera using the hardcoded lens ID variable mapping
+            html5QrcodeScanner.start(
+                { deviceId: { exact: cameraIdToUse } }, 
+                {
+                    fps: 10,       
+                    qrbox: 250,
+                    videoConstraints: {
+                        mandatory: {
+                            playsInline: true
+                        },
+                        optional: []
+                    }
                 },
-                optional: []
-            }
-        },
-        (decodedText) => {
-            // Evaluates text stream block content against 9-digit company pattern
-            if (decodedText.match(/^\d{9}$/)) {
-                proNumberInput.value = decodedText; 
-                
-                html5QrcodeScanner.stop().then(() => {
-                    console.log("Pallet QR code extracted. Stream paused.");
-                }).catch(err => console.error("Scanner tracking disconnect exception:", err));
-                
-                validateForm(); 
-            }
-        },
-        (errorMessage) => {
-            // Continues processing background frames seamlessly if parsing array is blank
-        }
-    ).then(() => {
-        // --- SECURE CONTEXT SAFARI COMPLIANCE EXTENSION ---
-        // Accesses the freshly injected stream container layer and forces muting to prevent hangs
-        const iosVideoElement = cameraFeed.querySelector('video');
-        if (iosVideoElement) {
-            iosVideoElement.setAttribute('playsinline', 'true');
-            iosVideoElement.setAttribute('webkit-playsinline', 'true');
-            iosVideoElement.muted = true;       // REQUIRED: Apple blocks camera autoplay unless muted is explicit
-            iosVideoElement.play();            // Forces video initialization loop out of hang state
-            iosVideoElement.style.transform = 'scaleX(1)'; // Disables mirroring for rear scanner tracking
+                (decodedText) => {
+                    if (decodedText.match(/^\d{9}$/)) {
+                        proNumberInput.value = decodedText; 
+                        
+                        html5QrcodeScanner.stop().then(() => {
+                            console.log("Pallet QR code extracted. Stream paused.");
+                        }).catch(err => console.error("Scanner tracking disconnect exception:", err));
+                        
+                        validateForm(); 
+                    }
+                },
+                (errorMessage) => {
+                    // Loops video frames smoothly until a code enters bounds
+                }
+            ).then(() => {
+                const iosVideoElement = cameraFeed.querySelector('video');
+                if (iosVideoElement) {
+                    iosVideoElement.setAttribute('playsinline', 'true');
+                    iosVideoElement.setAttribute('webkit-playsinline', 'true');
+                    iosVideoElement.muted = true;       
+                    iosVideoElement.play();            
+                    iosVideoElement.style.transform = 'scaleX(1)'; // Enforces normal orientation (not mirrored)
+                }
+            }).catch(err => {
+                console.error("Camera initial mount crash sequence:", err);
+                alert("Camera initialization failed. Ensure permissions are set to Allow.");
+            });
+        } else {
+            alert("No physical camera devices detected on this phone.");
         }
     }).catch(err => {
-        console.error("Camera initial mount crash sequence:", err);
-        alert("Camera error. Please ensure website settings allow camera access.");
+        console.error("Error enumerating device cameras:", err);
+        alert("Unable to query phone camera hardware details.");
     });
 }
 
