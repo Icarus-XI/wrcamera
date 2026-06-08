@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Canvas Freeze Frame Drawing Engine with Pre-Buffered iOS File Generation
+// Canvas Freeze Frame Drawing Engine with Immediate File Generation
 takePictureBtn.addEventListener('click', async () => {
     const canvas = document.createElement('canvas');
     const activeVideoTrack = cameraFeed.querySelector('video') || cameraFeed;
@@ -182,42 +182,63 @@ redoButton.addEventListener('click', () => {
     cameraFeed.innerHTML = '<button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button>';
     document.getElementById('start-stream-btn').addEventListener('click', startQrScanner);
     
-    // Clear out text boxes completely
     proNumberInput.value = "";
     lengthInput.value = "";
     widthInput.value = "";
     heightInput.value = "";
     capturedDataUrl = "";
     takenImage.src = '';
-    takenImage.removeAttribute('download');
-    takenImage.style.border = "none";
     isScanningPaused = false;
     
     validateForm(); 
 });
 
-// 3. Complete Browser-Unified Camera Roll Save Engine
-uploadButton.addEventListener('click', () => {
-    // Generate your exact company filename parameters
+// 3. Official Native iOS Share Sheet Menu Trigger (Bypasses Freeze Vulnerabilities)
+uploadButton.addEventListener('click', async () => {
+    uploadButton.disabled = true;
+    uploadButton.textContent = "Opening Save Menu...";
+    
     const fileName = `PRO_${proNumberInput.value}_DIM_${lengthInput.value}x${widthInput.value}x${heightInput.value}.jpg`;
 
-    // Instantly inject the dynamic file details into the preview container
-    takenImage.setAttribute('download', fileName);
-    takenImage.style.border = "4px solid #2ecc71"; // Flashes green border indicating readiness
-    
-    // Create a smooth, user-friendly mobile browser alert popup box
-    alert(`👉 MOBILE SAVE STRATEGY:\n\n1. Tap OK on this box.\n2. Scroll down to the stamped photo below.\n3. Tap and HOLD your finger on the image.\n4. Select "Save to Photos" from the menu.\n\nThis works perfectly in BOTH Chrome and Safari!`);
+    try {
+        // Prepare the image stream as a native file block inside the memory array
+        const response = await fetch(capturedDataUrl);
+        const blob = await response.blob();
+        const finalFile = new File([blob], fileName, { type: "image/jpeg" });
 
-    // Reset the data forms immediately so they are ready for the next pallet allocation loop
-    proNumberInput.value = "";
-    lengthInput.value = "";
-    widthInput.value = "";
-    heightInput.value = "";
-    
-    // Smooth layout scroll down to the image target box
-    takenImage.scrollIntoView({ behavior: 'smooth' });
-    
-    // Restore button text
-    uploadButton.disabled = false;
-    uploadButton.textContent = "Save Image to Device";
+        // Instantly forces Chrome and Safari to pull up the exact sliding panel from your first image
+        if (navigator.canShare && navigator.canShare({ files: [finalFile] })) {
+            await navigator.share({
+                files: [finalFile],
+                title: 'Stamped Entry'
+            });
+            
+            // Wipe data immediately after they dismiss or complete the saving workflow
+            proNumberInput.value = "";
+            lengthInput.value = "";
+            widthInput.value = "";
+            heightInput.value = "";
+            redoButton.click();
+        } else {
+            throw new Error("Direct sharing profiles unavailable.");
+        }
+    } catch (error) {
+        console.error('File export tracking crash:', error);
+        
+        // System Backup Route: Saves straight to Files folder if browser architecture breaks
+        const downloadLink = document.createElement('a');
+        downloadLink.href = capturedDataUrl;
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        proNumberInput.value = "";
+        lengthInput.value = "";
+        widthInput.value = "";
+        heightInput.value = "";
+        redoButton.click();
+    } finally {
+        uploadButton.textContent = "Save Image to Device";
+    }
 });
