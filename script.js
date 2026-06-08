@@ -12,6 +12,7 @@ const heightInput = document.getElementById('height');
 
 let capturedDataUrl = "";
 let html5QrcodeScanner = null;
+let isScanningPaused = false; // Custom flag to freeze scanner processing safely
 
 // Structural Validation Check Framework
 function validateForm() {
@@ -28,12 +29,11 @@ function validateForm() {
     input.addEventListener('input', validateForm);
 });
 
-// Auto-Scan Routine Mapping with Manual Interaction Lock and Auto-Cleaning Regex Engine
+// Auto-Scan Routine Mapping
 function startQrScanner() {
-    // Clear out the starting button text before mounting the viewfinder
     cameraFeed.innerHTML = "";
+    isScanningPaused = false;
     
-    // Explicitly create a clean inner container to shield the video track from CSS bugs
     const innerFeed = document.createElement("div");
     innerFeed.id = "qr-inner-video";
     innerFeed.style.width = "100%";
@@ -52,24 +52,20 @@ function startQrScanner() {
             }
         },
         (decodedText) => {
+            // FIX: If we have already successfully locked a code, ignore rapid background loops
+            if (isScanningPaused) return;
+
             console.log("Raw Scanned Payload: " + decodedText);
-            
-            // CLEANING ENGINE: Strip away all spaces, letters, and special symbols, keeping ONLY numbers
             const cleanedNumbers = decodedText.replace(/\D/g, '');
             
-            // Extract the first 9 sequential digits found in the scanned text string
             if (cleanedNumbers.length >= 9) {
+                isScanningPaused = true; // Set custom flag to freeze scanning processes
                 const targetProNumber = cleanedNumbers.substring(0, 9);
                 
-                // Automatically populate your form field!
                 proNumberInput.value = targetProNumber; 
+                console.log("PRO populated. Stream processor paused. Video remains active.");
                 
-                // Immediately shut down the camera stream track so it doesn't loop overwrite data
-                html5QrcodeScanner.stop().then(() => {
-                    console.log("PRO extracted and populated successfully. Engine paused.");
-                }).catch(err => console.error("Scanner tracking disconnect exception:", err));
-                
-                validateForm(); // Instantly re-verify if the button should unlock
+                validateForm(); 
             }
         },
         (errorMessage) => {
@@ -87,7 +83,6 @@ function startQrScanner() {
     }).catch(err => {
         console.error("Strict environment lock failed, attempting generic back lens fallback...", err);
         
-        // Final fallback: If iOS rejects the 'exact' constraint, try the standard environmental variable fallback
         html5QrcodeScanner.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: 250 }
@@ -163,6 +158,7 @@ takePictureBtn.addEventListener('click', () => {
     cameraFeed.insertAdjacentElement('beforebegin', takenImage);
     cameraFeed.style.display = 'none';
     
+    // Completely terminate camera tracks once the photo is officially captured
     if(html5QrcodeScanner && html5QrcodeScanner.isScanning) {
         html5QrcodeScanner.stop();
     }
@@ -178,8 +174,12 @@ redoButton.addEventListener('click', () => {
     cameraFeed.innerHTML = '<button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button>';
     document.getElementById('start-stream-btn').addEventListener('click', startQrScanner);
     
+    // FIX: Completely clear the PRO number field and reset tracking variables
+    proNumberInput.value = "";
     capturedDataUrl = "";
     takenImage.src = '';
+    isScanningPaused = false;
+    
     validateForm(); 
 });
 
