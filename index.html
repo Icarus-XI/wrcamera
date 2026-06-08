@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W&R Camera</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>W&R Camera</h1>
+    <div class="scanner-form">
+        <div id="camera-feed" style="width: 100%; max-width: 640px; margin: 0 auto;"></div>
+        <button id="take-picture-btn">Take Picture</button>
+        <button id="redo-button" style="background-color: red;">Redo</button>
+        
+        <label for="pro-number">Pro Number:</label>
+        <input type="number" id="pro-number" pattern="\d{9}" required>
+        
+        <label for="length">Length (inches):</label>
+        <input type="number" id="length" step="0.01" required>
+        
+        <label for="width">Width (inches):</label>
+        <input type="number" id="width" step="0.01" required>
+        
+        <label for="height">Height (inches):</label>
+        <input type="number" id="height" step="0.01" required>
+        
+        <button id="upload-button" disabled>Upload to Network Share</button>
+    </div>
+    
+    <img id="taken-image" src="" alt="Taken Image">
+
+    <!-- Script Libraries & App Engine Links -->
+	<script src="https://jsdelivr.net"></script>
+	<script src="https://cloudflare.com"></script>
+	<script src="script.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W&R Camera</title>
+    
+    <!-- Mobile PWA Core Mappings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>W&R Camera</h1>
+    <div class="scanner-form">
+        <!-- Structural layout block for the auto-scanner engine -->
+        <div id="camera-feed"></div>
+        
+        <button id="take-picture-btn">Take Picture</button>
+        <button id="redo-button">Redo</button>
+        
+        <label for="pro-number">Pro Number:</label>
+        <input type="number" id="pro-number" pattern="\d{9}" required>
+        
+        <label for="length">Length (inches):</label>
+        <input type="number" id="length" step="0.01" required>
+        
+        <label for="width">Width (inches):</label>
+        <input type="number" id="width" step="0.01" required>
+        
+        <label for="height">Height (inches):</label>
+        <input type="number" id="height" step="0.01" required>
+        
+        <button id="upload-button" disabled>Save Image to Device</button>
+    </div>
+    
+    <img id="taken-image" src="" alt="Taken Image">
+
+    <!-- 100% Offline Local Script Engines -->
+    <script src="axios.min.js"></script>
+    <script src="html5-qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
