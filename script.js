@@ -28,26 +28,30 @@ function validateForm() {
     input.addEventListener('input', validateForm);
 });
 
-// Auto-Scan Routine Mapping with Hardcoded Rear-Lens Constraint Locks
+// Auto-Scan Routine Mapping with Manual Interaction Lock and CSS Shielding
 function startQrScanner() {
+    // Clear out the starting button text before mounting the viewfinder
     cameraFeed.innerHTML = "";
     
-    html5QrcodeScanner = new Html5Qrcode("camera-feed");
+    // Explicitly create a clean inner container to shield the video track from CSS bugs
+    const innerFeed = document.createElement("div");
+    innerFeed.id = "qr-inner-video";
+    innerFeed.style.width = "100%";
+    innerFeed.style.height = "100%";
+    cameraFeed.appendChild(innerFeed);
     
-    // Bypasses label checks and forces a strict Apple hardware configuration payload
+    html5QrcodeScanner = new Html5Qrcode("qr-inner-video");
+    
     html5QrcodeScanner.start(
-        { 
-            facingMode: { exact: "environment" } // Force the physical rear lens directly
-        }, 
+        { facingMode: { exact: "environment" } }, 
         {
             fps: 10,       
             qrbox: 250,
             videoConstraints: {
-                facingMode: { exact: "environment" } // Reinforce the back lens constraint layer for Chrome/Safari
+                facingMode: { exact: "environment" } 
             }
         },
         (decodedText) => {
-            // Evaluates text stream block content against 9-digit company pattern
             if (decodedText.match(/^\d{9}$/)) {
                 proNumberInput.value = decodedText; 
                 
@@ -59,7 +63,7 @@ function startQrScanner() {
             }
         },
         (errorMessage) => {
-            // Continues processing background frames seamlessly if parsing array is blank
+            // Loops video frames smoothly until a code enters bounds
         }
     ).then(() => {
         const iosVideoElement = cameraFeed.querySelector('video');
@@ -68,7 +72,7 @@ function startQrScanner() {
             iosVideoElement.setAttribute('webkit-playsinline', 'true');
             iosVideoElement.muted = true;       
             iosVideoElement.play();            
-            iosVideoElement.style.transform = 'scaleX(1)'; // Enforces normal orientation (not mirrored)
+            iosVideoElement.style.transform = 'scaleX(1)'; 
         }
     }).catch(err => {
         console.error("Strict environment lock failed, attempting generic back lens fallback...", err);
