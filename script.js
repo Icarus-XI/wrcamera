@@ -28,8 +28,11 @@ function validateForm() {
     input.addEventListener('input', validateForm);
 });
 
-// Auto-Scan Routine Mapping with Safari Security Compliance Extension
+// Auto-Scan Routine Mapping with Manual Interaction Lock
 function startQrScanner() {
+    // Clear out the starting button text before mounting the viewfinder
+    cameraFeed.innerHTML = "";
+    
     html5QrcodeScanner = new Html5Qrcode("camera-feed");
     
     html5QrcodeScanner.start(
@@ -37,7 +40,6 @@ function startQrScanner() {
         {
             fps: 10,       
             qrbox: 250,
-            // Forces iOS to bypass full-screen media player configurations
             videoConstraints: {
                 mandatory: {
                     playsInline: true
@@ -73,11 +75,16 @@ function startQrScanner() {
         }
     }).catch(err => {
         console.error("Camera initial mount crash sequence:", err);
+        alert("Camera error. Please ensure website settings allow camera access.");
     });
 }
 
+// Binds the camera launch to a safe user interaction block
 document.addEventListener("DOMContentLoaded", () => {
-    startQrScanner();
+    const startBtn = document.getElementById('start-stream-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', startQrScanner);
+    }
 });
 
 // Canvas Freeze Frame Drawing Engine
@@ -139,7 +146,9 @@ redoButton.addEventListener('click', () => {
     document.body.appendChild(takenImage);
     cameraFeed.style.display = 'block';
     
-    startQrScanner();
+    // Restore the starting configuration interface layout
+    cameraFeed.innerHTML = '<button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button>';
+    document.getElementById('start-stream-btn').addEventListener('click', startQrScanner);
     
     capturedDataUrl = "";
     takenImage.src = '';
