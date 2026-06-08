@@ -28,7 +28,7 @@ function validateForm() {
     input.addEventListener('input', validateForm);
 });
 
-// Auto-Scan Routine Mapping with Apple iOS WebKit Black Screen Fix
+// Auto-Scan Routine Mapping with Safari Security Compliance Extension
 function startQrScanner() {
     html5QrcodeScanner = new Html5Qrcode("camera-feed");
     
@@ -36,7 +36,14 @@ function startQrScanner() {
         { facingMode: "environment" }, // Focuses execution via back-facing lenses
         {
             fps: 10,       
-            qrbox: 250     
+            qrbox: 250,
+            // Forces iOS to bypass full-screen media player configurations
+            videoConstraints: {
+                mandatory: {
+                    playsInline: true
+                },
+                optional: []
+            }
         },
         (decodedText) => {
             // Evaluates text stream block content against 9-digit company pattern
@@ -54,12 +61,14 @@ function startQrScanner() {
             // Continues processing background frames seamlessly if parsing array is blank
         }
     ).then(() => {
-        // --- CRITICAL APPLE IOS WEBKIT BLACK SCREEN FIX ---
-        // Forces Safari to render the video frame layout inline instead of crashing
+        // --- SECURE CONTEXT SAFARI COMPLIANCE EXTENSION ---
+        // Accesses the freshly injected stream container layer and forces muting to prevent hangs
         const iosVideoElement = cameraFeed.querySelector('video');
         if (iosVideoElement) {
             iosVideoElement.setAttribute('playsinline', 'true');
             iosVideoElement.setAttribute('webkit-playsinline', 'true');
+            iosVideoElement.muted = true;       // REQUIRED: Apple blocks camera autoplay unless muted is explicit
+            iosVideoElement.play();            // Forces video initialization loop out of hang state
             iosVideoElement.style.transform = 'scaleX(1)'; // Disables mirroring for rear scanner tracking
         }
     }).catch(err => {
