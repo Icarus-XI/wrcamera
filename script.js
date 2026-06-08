@@ -28,7 +28,7 @@ function validateForm() {
     input.addEventListener('input', validateForm);
 });
 
-// Auto-Scan Routine Mapping
+// Auto-Scan Routine Mapping with Apple iOS WebKit Black Screen Fix
 function startQrScanner() {
     html5QrcodeScanner = new Html5Qrcode("camera-feed");
     
@@ -53,7 +53,16 @@ function startQrScanner() {
         (errorMessage) => {
             // Continues processing background frames seamlessly if parsing array is blank
         }
-    ).catch(err => {
+    ).then(() => {
+        // --- CRITICAL APPLE IOS WEBKIT BLACK SCREEN FIX ---
+        // Forces Safari to render the video frame layout inline instead of crashing
+        const iosVideoElement = cameraFeed.querySelector('video');
+        if (iosVideoElement) {
+            iosVideoElement.setAttribute('playsinline', 'true');
+            iosVideoElement.setAttribute('webkit-playsinline', 'true');
+            iosVideoElement.style.transform = 'scaleX(1)'; // Disables mirroring for rear scanner tracking
+        }
+    }).catch(err => {
         console.error("Camera initial mount crash sequence:", err);
     });
 }
