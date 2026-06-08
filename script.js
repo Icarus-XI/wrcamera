@@ -194,51 +194,40 @@ redoButton.addEventListener('click', () => {
     validateForm(); 
 });
 
-// Native iOS Save to Photos Gallery / Share Event
-uploadButton.addEventListener('click', async () => {
+// 3. Native Mobile Stamped File Generation and Save Engine
+uploadButton.addEventListener('click', () => {
     uploadButton.disabled = true;
-    uploadButton.textContent = "Processing Image...";
+    uploadButton.textContent = "Saving File...";
 
+    // Generate your exact company filename
     const fileName = `PRO_${proNumberInput.value}_DIM_${lengthInput.value}x${widthInput.value}x${heightInput.value}.jpg`;
 
     try {
-        // Convert your canvas dataURL string back into a real binary file stream object
-        const blob = await (await fetch(capturedDataUrl)).blob();
-        const file = new File([blob], fileName, { type: "image/jpeg" });
+        // Create a temporary link module to trigger an offline storage save
+        const downloadLink = document.createElement('a');
+        downloadLink.href = capturedDataUrl;
+        downloadLink.download = fileName;
 
-        // Check if the current phone browser supports direct OS sharing profiles
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                files: [file],
-                title: 'Stamped Pallet Entry',
-                text: `Freight Record: ${fileName}`
-            });
-            
-            // Wipe form fields and reset loop layouts immediately upon sheet dismissal
-            proNumberInput.value = "";
-            lengthInput.value = "";
-            widthInput.value = "";
-            heightInput.value = "";
-            redoButton.click();
-        } else {
-            // Fallback strategy for older iOS browser iterations (Files app saving)
-            const downloadLink = document.createElement('a');
-            downloadLink.href = capturedDataUrl;
-            downloadLink.download = fileName;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-            alert('Exported directly to Files app downloads folder.');
-            
-            proNumberInput.value = "";
-            lengthInput.value = "";
-            widthInput.value = "";
-            heightInput.value = "";
-            redoButton.click();
-        }
+        // Force a click event to inject the image file onto the device shell
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        // Instant completion indicator
+        alert(`Successfully saved: ${fileName}\n\nCheck your device Files App (Downloads folder) or Photos Gallery.`);
+        
+        // Reset the interface immediately for the next warehouse pallet allocation
+        proNumberInput.value = "";
+        lengthInput.value = "";
+        widthInput.value = "";
+        heightInput.value = "";
+        redoButton.click();
+
     } catch (error) {
-        console.error('Mobile share initialization aborted:', error);
-        uploadButton.disabled = false;
+        console.error('File export routine execution crash:', error);
+        alert("Unable to process local download compilation.");
+    } finally {
+        // Ensure the button resets to its original clean text state
         uploadButton.textContent = "Save Image to Device";
     }
 });
