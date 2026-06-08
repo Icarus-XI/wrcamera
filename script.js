@@ -28,7 +28,7 @@ function validateForm() {
     input.addEventListener('input', validateForm);
 });
 
-// Auto-Scan Routine Mapping with Manual Interaction Lock and CSS Shielding
+// Auto-Scan Routine Mapping with Manual Interaction Lock and Auto-Cleaning Regex Engine
 function startQrScanner() {
     // Clear out the starting button text before mounting the viewfinder
     cameraFeed.innerHTML = "";
@@ -52,14 +52,24 @@ function startQrScanner() {
             }
         },
         (decodedText) => {
-            if (decodedText.match(/^\d{9}$/)) {
-                proNumberInput.value = decodedText; 
+            console.log("Raw Scanned Payload: " + decodedText);
+            
+            // CLEANING ENGINE: Strip away all spaces, letters, and special symbols, keeping ONLY numbers
+            const cleanedNumbers = decodedText.replace(/\D/g, '');
+            
+            // Extract the first 9 sequential digits found in the scanned text string
+            if (cleanedNumbers.length >= 9) {
+                const targetProNumber = cleanedNumbers.substring(0, 9);
                 
+                // Automatically populate your form field!
+                proNumberInput.value = targetProNumber; 
+                
+                // Immediately shut down the camera stream track so it doesn't loop overwrite data
                 html5QrcodeScanner.stop().then(() => {
-                    console.log("Pallet QR code extracted. Stream paused.");
+                    console.log("PRO extracted and populated successfully. Engine paused.");
                 }).catch(err => console.error("Scanner tracking disconnect exception:", err));
                 
-                validateForm(); 
+                validateForm(); // Instantly re-verify if the button should unlock
             }
         },
         (errorMessage) => {
