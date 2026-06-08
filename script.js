@@ -112,8 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Canvas Freeze Frame Drawing Engine
-takePictureBtn.addEventListener('click', () => {
+// Canvas Freeze Frame Drawing Engine with Pre-Buffered iOS File Generation
+takePictureBtn.addEventListener('click', async () => {
     const canvas = document.createElement('canvas');
     const activeVideoTrack = cameraFeed.querySelector('video') || cameraFeed;
     
@@ -164,6 +164,15 @@ takePictureBtn.addEventListener('click', () => {
         html5QrcodeScanner.stop();
     }
     
+    // --- PRE-BUFFER FILE FOR NATIVE CAMERA ROLL SAVE UNLOCK ---
+    // Converts the canvas snapshot into a binary block BEFORE the user clicks save
+    try {
+        const blob = await (await fetch(capturedDataUrl)).blob();
+        window.bufferedImageFile = new File([blob], "temp.jpg", { type: "image/jpeg" });
+    } catch(e) {
+        console.error("Background file pre-buffering failed:", e);
+    }
+    
     validateForm(); 
 });
 
@@ -190,44 +199,63 @@ redoButton.addEventListener('click', () => {
     capturedDataUrl = "";
     takenImage.src = '';
     isScanningPaused = false;
+    window.bufferedImageFile = null;
     
     validateForm(); 
 });
 
-// 3. Native Mobile Stamped File Generation and Save Engine
-uploadButton.addEventListener('click', () => {
+// 3. Instant Native iOS Share / Photos App Save Engine
+uploadButton.addEventListener('click', async () => {
     uploadButton.disabled = true;
-    uploadButton.textContent = "Saving File...";
-
-    // Generate your exact company filename
+    uploadButton.textContent = "Opening Save Menu...";
+    
     const fileName = `PRO_${proNumberInput.value}_DIM_${lengthInput.value}x${widthInput.value}x${heightInput.value}.jpg`;
 
     try {
-        // Create a temporary link module to trigger an offline storage save
+        // Safety fallback check if the image buffering task failed earlier
+        let finalFile = window.bufferedImageFile;
+        if (!finalFile) {
+            const blob = await (await fetch(capturedDataUrl)).blob();
+            finalFile = new File([blob], fileName, { type: "image/jpeg" });
+        } else {
+            // Rename our pre-buffered binary data object to match our company parameters instantly
+            finalFile = new File([window.bufferedImageFile], fileName, { type: "image/jpeg" });
+        }
+
+        // Fires instantly upon touch without an asynchronous delay, satisfying Apple's security rules
+        if (navigator.canShare && navigator.canShare({ files: [finalFile] })) {
+            await navigator.share({
+                files: [finalFile],
+                title: 'Stamped Entry'
+            });
+            
+            // Clean up forms upon successful layout dismissal
+            proNumberInput.value = "";
+            lengthInput.value = "";
+            widthInput.value = "";
+            heightInput.value = "";
+            redoButton.click();
+        } else {
+            throw new Error("Direct sharing profiles unavailable.");
+        }
+    } catch (error) {
+        console.error('File export routine execution crash, dropping back to Files app fallback:', error);
+        
+        // Fallback strategy: Saves straight to Files app if the device blocks sharing profiles
         const downloadLink = document.createElement('a');
         downloadLink.href = capturedDataUrl;
         downloadLink.download = fileName;
-
-        // Force a click event to inject the image file onto the device shell
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
-
-        // Instant completion indicator
-        alert(`Successfully saved: ${fileName}\n\nCheck your device Files App (Downloads folder) or Photos Gallery.`);
         
-        // Reset the interface immediately for the next warehouse pallet allocation
         proNumberInput.value = "";
         lengthInput.value = "";
         widthInput.value = "";
         heightInput.value = "";
         redoButton.click();
-
-    } catch (error) {
-        console.error('File export routine execution crash:', error);
-        alert("Unable to process local download compilation.");
     } finally {
-        // Ensure the button resets to its original clean text state
         uploadButton.textContent = "Save Image to Device";
+        window.bufferedImageFile = null; // Clear background cache allocation
     }
 });
