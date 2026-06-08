@@ -12,7 +12,7 @@ const heightInput = document.getElementById('height');
 
 let capturedDataUrl = "";
 let html5QrcodeScanner = null;
-let isScanningPaused = false; // Custom flag to freeze scanner processing safely
+let isScanningPaused = false;
 
 // Structural Validation Check Framework
 function validateForm() {
@@ -52,18 +52,21 @@ function startQrScanner() {
             }
         },
         (decodedText) => {
-            // FIX: If we have already successfully locked a code, ignore rapid background loops
             if (isScanningPaused) return;
 
             console.log("Raw Scanned Payload: " + decodedText);
             const cleanedNumbers = decodedText.replace(/\D/g, '');
             
             if (cleanedNumbers.length >= 9) {
-                isScanningPaused = true; // Set custom flag to freeze scanning processes
+                isScanningPaused = true;
                 const targetProNumber = cleanedNumbers.substring(0, 9);
                 
                 proNumberInput.value = targetProNumber; 
-                console.log("PRO populated. Stream processor paused. Video remains active.");
+                
+                const currentVideoElement = cameraFeed.querySelector('video');
+                if (currentVideoElement) {
+                    currentVideoElement.setAttribute('data-scan-locked', 'true');
+                }
                 
                 validateForm(); 
             }
@@ -97,7 +100,6 @@ function startQrScanner() {
             }
         }).catch(finalErr => {
             console.error("All camera pipelines failed:", finalErr);
-            alert("Camera initialization failed. Ensure permissions are allowed in your device settings.");
         });
     });
 }
@@ -158,7 +160,6 @@ takePictureBtn.addEventListener('click', () => {
     cameraFeed.insertAdjacentElement('beforebegin', takenImage);
     cameraFeed.style.display = 'none';
     
-    // Completely terminate camera tracks once the photo is officially captured
     if(html5QrcodeScanner && html5QrcodeScanner.isScanning) {
         html5QrcodeScanner.stop();
     }
@@ -167,15 +168,26 @@ takePictureBtn.addEventListener('click', () => {
 });
 
 redoButton.addEventListener('click', () => {
+    // If a scanner task loop was running, make sure it shuts down safely first
+    if(html5QrcodeScanner) {
+        try {
+            html5QrcodeScanner.stop();
+        } catch(e) {
+            console.log("Scanner loop already stopped.");
+        }
+    }
+
     document.body.appendChild(takenImage);
-    cameraFeed.style.display = 'block';
+    cameraFeed.style.display = 'flex';
     
-    // Restore the starting configuration interface layout
     cameraFeed.innerHTML = '<button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button>';
     document.getElementById('start-stream-btn').addEventListener('click', startQrScanner);
     
-    // FIX: Completely clear the PRO number field and reset tracking variables
+    // Clear out text boxes completely
     proNumberInput.value = "";
+    lengthInput.value = "";
+    widthInput.value = "";
+    heightInput.value = "";
     capturedDataUrl = "";
     takenImage.src = '';
     isScanningPaused = false;
@@ -200,6 +212,9 @@ uploadButton.addEventListener('click', () => {
 
     alert('Stamped image exported directly to local iPhone Storage!');
     
-    document.querySelectorAll('input').forEach(i => i.value = '');
+    proNumberInput.value = "";
+    lengthInput.value = "";
+    widthInput.value = "";
+    heightInput.value = "";
     redoButton.click();
 });
