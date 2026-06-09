@@ -1,48 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>W&R Camera</title>
-    
-    <!-- Mobile PWA Core Mappings -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <h1>W&R Camera</h1>
-    <div class="scanner-form">
-        <!-- Structural layout block for the auto-scanner engine with activation prompt -->
-        <div id="camera-feed" style="width: 100%; max-width: 500px; height: 380px; background: #222; margin: 0 auto; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-            <button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button>
-        </div>
-        
-        <button id="take-picture-btn">Take Picture</button>
-        <button id="redo-button">Redo</button>
-        
-        <label for="pro-number">Pro Number:</label>
-        <input type="text" id="pro-number" pattern="\d{9}" inputmode="numeric" required>
-        
-        <label for="length">Length (inches):</label>
-        <input type="number" id="length" step="0.01" required>
-        
-        <label for="width">Width (inches):</label>
-        <input type="number" id="width" step="0.01" required>
-        
-        <label for="height">Height (inches):</label>
-        <input type="number" id="height" step="0.01" required>
-        
-        <button id="upload-button" disabled>Save Image to Device</button>
-    </div>
-    
-    <img id="taken-image" src="" alt="Taken Image">
-
-    <!-- 100% LOCAL OFFLINE ENGINGES (No Cloud Dependencies) -->
-    <script>window.axios = { post: function() { return Promise.resolve({ data: "Offline Bypass Success" }); } };</script>
-    <script src="html5-qrcode.min.js"></script>
-    <script src="script.js"></script>
-</body>
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+    <title>W&R Camera</title> 
+    <!-- Mobile PWA Core Mappings --> 
+    <link rel="manifest" href="manifest.json"> 
+    <meta name="apple-mobile-web-app-capable" content="yes"> 
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
+    <link rel="stylesheet" href="styles.css"> 
+</head> 
+<body> 
+    <h1>W&R Camera</h1> 
+    <div class="scanner-form"> 
+        <!-- Structural layout block for the auto-scanner engine with activation prompt --> 
+        <div id="camera-feed" style="width: 100%; max-width: 500px; height: 380px; background: #222; margin: 0 auto; border-radius: 6px; display: flex; align-items: center; justify-content: center;"> 
+            <button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button> 
+        </div> 
+        <button id="take-picture-btn">Take Picture</button> 
+        <button id="redo-button">Redo</button> 
+        <label for="pro-number">Pro Number:</label> 
+        <input type="text" id="pro-number" pattern="\d{9}" inputmode="numeric" required> 
+        <label for="length">Length (inches):</label> 
+        <input type="number" id="length" step="0.01" inputmode="decimal" required> 
+        <label for="width">Width (inches):</label> 
+        <input type="number" id="width" step="0.01" inputmode="decimal" required> 
+        <label for="height">Height (inches):</label> 
+        <input type="number" id="height" step="0.01" inputmode="decimal" required> 
+        <button id="upload-button" disabled>Save Image to Device</button> 
+    </div> 
+    <img id="taken-image" src="" alt="Taken Image"> 
+    <!-- 100% LOCAL OFFLINE ENGINGES (No Cloud Dependencies) --> 
+    <script>window.axios = { post: function() { return Promise.resolve({ data: "Offline Bypass Success" }); } };</script> 
+    <script src="html5-qrcode.min.js"></script> 
+    <script src="script.js"></script> 
+</body> 
 </html>
