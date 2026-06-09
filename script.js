@@ -144,15 +144,24 @@ document.addEventListener("DOMContentLoaded", () => {
         startBtn.addEventListener('click', startQrScanner); 
     } 
     
+    // Theme Memory Engine: Check if the user previously selected Dark Mode
+    const savedTheme = localStorage.getItem('wr-camera-theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (themeToggleBtn) themeToggleBtn.textContent = "☀️ Light Mode";
+    }
+
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             if (currentTheme === 'dark') {
                 document.documentElement.removeAttribute('data-theme');
                 themeToggleBtn.textContent = "🌙 Dark Mode";
+                localStorage.setItem('wr-camera-theme', 'light'); // Save setting
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 themeToggleBtn.textContent = "☀️ Light Mode";
+                localStorage.setItem('wr-camera-theme', 'dark'); // Save setting
             }
         });
     }
