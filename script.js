@@ -48,9 +48,13 @@ function startQrScanner() {
             console.log("Raw Scanned Payload: " + decodedText); 
             
             const cleanedNumbers = decodedText.replace(/\D/g, ''); 
-            if (cleanedNumbers.length >= 9) { 
+            
+            // Layout parser: targets long combined labels (usually 15 digits)
+            if (cleanedNumbers.length >= 15) { 
                 isScanningPaused = true; 
-                const targetProNumber = cleanedNumbers.substring(0, 9); 
+                
+                // Skips the first 4 HUID prefix numbers, grabs the core 9 digits
+                const targetProNumber = cleanedNumbers.substring(4, 13); 
                 proNumberInput.value = targetProNumber; 
                 
                 const currentVideoElement = cameraFeed.querySelector('video'); 
@@ -59,6 +63,17 @@ function startQrScanner() {
                 } 
                 validateForm(); 
             } 
+            // Fallback layout parser: targets pure 9-digit standard Pro labels
+            else if (cleanedNumbers.length === 9) {
+                isScanningPaused = true; 
+                proNumberInput.value = cleanedNumbers; 
+                
+                const currentVideoElement = cameraFeed.querySelector('video'); 
+                if (currentVideoElement) { 
+                    currentVideoElement.setAttribute('data-scan-locked', 'true'); 
+                } 
+                validateForm(); 
+            }
         }, 
         (errorMessage) => { 
             // Loops video frames smoothly until a code enters bounds 
@@ -154,7 +169,6 @@ takePictureBtn.addEventListener('click', async () => {
 
 // Redo button reset sequence
 redoButton.addEventListener('click', async () => { 
-    // Completely kill and clear the active scanner hardware instance to dump browser memory cache 
     if (html5QrcodeScanner) { 
         try { 
             if (html5QrcodeScanner.isScanning) { 
@@ -166,7 +180,6 @@ redoButton.addEventListener('click', async () => {
         html5QrcodeScanner = null; 
     } 
     
-    // Return preview frame elements safely to default layouts 
     document.body.appendChild(takenImage); 
     cameraFeed.style.display = 'flex'; 
     cameraFeed.innerHTML = '<button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button>'; 
@@ -192,16 +205,13 @@ uploadButton.addEventListener('click', async () => {
     const fileName = `PRO_${proNumberInput.value}_DIM_${lengthInput.value}x${widthInput.value}x${heightInput.value}.jpg`; 
     
     try { 
-        // Prepare the image stream as a native file block inside the memory array 
         const response = await fetch(capturedDataUrl); 
         const blob = await response.blob(); 
         const finalFile = new File([blob], fileName, { type: "image/jpeg" }); 
         
-        // Instantly forces Chrome and Safari to pull up the exact sliding panel 
         if (navigator.canShare && navigator.canShare({ files: [finalFile] })) { 
             await navigator.share({ files: [finalFile], title: 'Stamped Entry' }); 
             
-            // Wipe data immediately after they dismiss or complete the saving workflow 
             proNumberInput.value = ""; 
             lengthInput.value = ""; 
             widthInput.value = ""; 
@@ -213,7 +223,6 @@ uploadButton.addEventListener('click', async () => {
     } catch (error) { 
         console.error('File export tracking crash:', error); 
         
-        // System Backup Route: Saves straight to Files folder if browser architecture breaks 
         const downloadLink = document.createElement('a'); 
         downloadLink.href = capturedDataUrl; 
         downloadLink.download = fileName; 
