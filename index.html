@@ -11,12 +11,19 @@
     <link rel="stylesheet" href="styles.css"> 
 </head> 
 <body> 
+    <div class="theme-control">
+        <button id="theme-toggle-btn">🌙 Dark Mode</button>
+    </div>
     <h1>W&R Camera</h1> 
     <div class="scanner-form"> 
-        <!-- Structural layout block for the auto-scanner engine with activation prompt --> 
-        <div id="camera-feed" style="width: 100%; max-width: 500px; height: 380px; background: #222; margin: 0 auto; border-radius: 6px; display: flex; align-items: center; justify-content: center;"> 
+        <!-- Structural layout block for the auto-scanner engine --> 
+        <div id="camera-feed" style="width: 100%; max-width: 500px; height: 380px; background: #222; margin: 0 auto; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;"> 
             <button id="start-stream-btn" style="width: 80%; background-color: #3498db; color: #fff; height: 44px; font-size: 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">Activate Warehouse Camera</button> 
         </div> 
+        
+        <!-- Flashlight Controller Container Hook -->
+        <div id="torch-container"></div>
+
         <button id="take-picture-btn">Take Picture</button> 
         <button id="redo-button">Redo</button> 
         <label for="pro-number">Pro Number:</label> 
