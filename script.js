@@ -172,12 +172,14 @@ takePictureBtn.addEventListener('click', async () => {
     const canvas = document.createElement('canvas'); 
     const activeVideoTrack = cameraFeed.querySelector('video') || cameraFeed; 
     
-    // QUALITY UPGRADE: Target full High-Definition (HD) scale if system properties hide raw streams
-    canvas.width = activeVideoTrack.videoWidth || 1920; 
-    canvas.height = activeVideoTrack.videoHeight || 1080; 
+    // FIXED RESOLUTION: Explicitly locks standard portrait canvas layout dimensions (1080 width x 1440 height)
+    canvas.width = 1080; 
+    canvas.height = 1440; 
     
     const context = canvas.getContext('2d'); 
-    context.drawImage(activeVideoTrack, 0, 0); 
+    
+    // Force the active video track to stretch and paint cleanly into our locked portrait viewport grid
+    context.drawImage(activeVideoTrack, 0, 0, canvas.width, canvas.height); 
     
     const proNumber = proNumberInput.value || 'N/A'; 
     const length = lengthInput.value || '0'; 
@@ -185,11 +187,9 @@ takePictureBtn.addEventListener('click', async () => {
     const height = heightInput.value || '0'; 
     const timestamp = new Date().toLocaleString(); 
     
-    // Set font style early so the canvas engine can accurately measure text pixel widths
-    context.font = 'bold 36px Arial'; 
+    // PROPORTIONAL TEXT SCALING: Perfect 28px base font optimized for our locked 1080px viewport width
+    context.font = 'bold 28px Arial'; 
     context.textBaseline = 'top'; 
-    
-    // POSITION FIX: Return text alignment to standard left-alignment
     context.textAlign = 'left';
     
     const lines = [ 
@@ -207,28 +207,28 @@ takePictureBtn.addEventListener('click', async () => {
         }
     });
     
-    // Calculate final box dimensions using the text size + custom padding
+    // Compute box footprint bounding frames based on text pixel width + padding
     const boxWidth = maxTextWidth + 40; 
-    const boxHeight = (lines.length * 44) + 24; 
-    const margin = 24; 
+    const boxHeight = (lines.length * 40) + 24; 
+    const margin = 30; 
     
-    // POSITIONING CALCULATOR: Place the box perfectly in the bottom-left corner of the photo canvas
+    // POSITIONING MATH: Placed in the stable bottom-left corner zone
     const x = margin; 
     const y = canvas.height - boxHeight - margin; 
     
-    // Draw the background black box
+    // Draw the clean background semi-transparent card box
     context.fillStyle = 'rgba(0, 0, 0, 0.65)'; 
     context.fillRect(x, y, boxWidth, boxHeight); 
     
-    // Print lines over the black box container
+    // Print lines perfectly aligned over the box
     context.fillStyle = '#ffffff'; 
     lines.forEach((line, index) => { 
-        const textY = y + 16 + (index * 44); 
+        const textY = y + 16 + (index * 40); 
         context.fillText(line, x + 20, textY); 
     }); 
     
-    // QUALITY UPGRADE: Changed JPEG compression from 0.85 to 0.98 for maximum pixel clarity
-    capturedDataUrl = canvas.toDataURL('image/jpeg', 0.98); 
+    // RENDER OUTPUT: High precision JPEG compilation stream
+    capturedDataUrl = canvas.toDataURL('image/jpeg', 0.95); 
     takenImage.src = capturedDataUrl; 
     cameraFeed.insertAdjacentElement('beforebegin', takenImage); 
     cameraFeed.style.display = 'none'; 
