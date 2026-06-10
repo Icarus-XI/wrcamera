@@ -199,7 +199,9 @@ takePictureBtn.addEventListener('click', async () => {
     const boxWidth = 560; 
     const boxHeight = (lines.length * 44) + 24; 
     const margin = 24; 
-    const x = canvas.width - boxWidth - margin; 
+    
+    // POSITION FIX: Anchored directly to the top-left edge to keep text 100% visible on small mobile viewports
+    const x = margin; 
     const y = margin; 
     
     context.fillStyle = 'rgba(0, 0, 0, 0.70)'; 
