@@ -164,6 +164,7 @@ button:disabled {
     border-radius: 6px; 
     border: 2px dashed #ccc; 
     background-color: #eaeaea; 
+    object-fit: contain !important;
 } 
 
 #taken-image[src=""], #taken-image:not([src]) { 
