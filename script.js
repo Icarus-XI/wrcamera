@@ -212,9 +212,10 @@ takePictureBtn.addEventListener('click', async () => {
     const boxHeight = (lines.length * 40) + 24; 
     const margin = 30; 
     
-    // POSITIONING MATH: Placed in the stable bottom-left corner zone
-    const x = margin; 
-    const y = canvas.height - boxHeight - margin; 
+    // POSITIONING MATH: Placed cleanly in the top-right corner zone
+    // Calculating right edge boundary minus the box's dynamic width and margin
+    const x = canvas.width - boxWidth - margin; 
+    const y = margin; 
     
     // Draw the clean background semi-transparent card box
     context.fillStyle = 'rgba(0, 0, 0, 0.65)'; 
