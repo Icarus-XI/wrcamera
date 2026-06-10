@@ -157,11 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (currentTheme === 'dark') {
                 document.documentElement.removeAttribute('data-theme');
                 themeToggleBtn.textContent = "🌙 Dark Mode";
-                localStorage.setItem('wr-camera-theme', 'light'); // Save setting
+                localStorage.setItem('wr-camera-theme', 'light'); 
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 themeToggleBtn.textContent = "☀️ Light Mode";
-                localStorage.setItem('wr-camera-theme', 'dark'); // Save setting
+                localStorage.setItem('wr-camera-theme', 'dark'); 
             }
         });
     }
@@ -172,8 +172,9 @@ takePictureBtn.addEventListener('click', async () => {
     const canvas = document.createElement('canvas'); 
     const activeVideoTrack = cameraFeed.querySelector('video') || cameraFeed; 
     
-    canvas.width = activeVideoTrack.videoWidth || 640; 
-    canvas.height = activeVideoTrack.videoHeight || 480; 
+    // QUALITY UPGRADE: Target full High-Definition (HD) scale if system properties hide raw streams
+    canvas.width = activeVideoTrack.videoWidth || 1920; 
+    canvas.height = activeVideoTrack.videoHeight || 1080; 
     
     const context = canvas.getContext('2d'); 
     context.drawImage(activeVideoTrack, 0, 0); 
@@ -184,7 +185,8 @@ takePictureBtn.addEventListener('click', async () => {
     const height = heightInput.value || '0'; 
     const timestamp = new Date().toLocaleString(); 
     
-    context.font = 'bold 20px Arial'; 
+    // QUALITY UPGRADE: Scale text watermark sizes up to match crisp HD canvas pixel counts
+    context.font = 'bold 36px Arial'; 
     context.textBaseline = 'top'; 
     
     const lines = [ 
@@ -193,22 +195,24 @@ takePictureBtn.addEventListener('click', async () => {
         `DATE: ${timestamp}` 
     ]; 
     
-    const boxWidth = 320; 
-    const boxHeight = (lines.length * 26) + 16; 
-    const margin = 12; 
+    // Adjusted bounding watermark layouts for the larger pixel grid
+    const boxWidth = 560; 
+    const boxHeight = (lines.length * 44) + 24; 
+    const margin = 24; 
     const x = canvas.width - boxWidth - margin; 
     const y = margin; 
     
-    context.fillStyle = 'rgba(0, 0, 0, 0.65)'; 
+    context.fillStyle = 'rgba(0, 0, 0, 0.70)'; 
     context.fillRect(x, y, boxWidth, boxHeight); 
     context.fillStyle = '#ffffff'; 
     
     lines.forEach((line, index) => { 
-        const textY = y + 10 + (index * 26); 
-        context.fillText(line, x + 12, textY); 
+        const textY = y + 16 + (index * 44); 
+        context.fillText(line, x + 20, textY); 
     }); 
     
-    capturedDataUrl = canvas.toDataURL('image/jpeg', 0.85); 
+    // QUALITY UPGRADE: Changed JPEG compression from 0.85 to 0.98 for maximum pixel clarity
+    capturedDataUrl = canvas.toDataURL('image/jpeg', 0.98); 
     takenImage.src = capturedDataUrl; 
     cameraFeed.insertAdjacentElement('beforebegin', takenImage); 
     cameraFeed.style.display = 'none'; 
