@@ -195,12 +195,11 @@ takePictureBtn.addEventListener('click', async () => {
         `DATE: ${timestamp}` 
     ]; 
     
-    // Adjusted bounding watermark layouts for the larger pixel grid
-    const boxWidth = 560; 
+    // POSITION & WIDTH FIX: Box width expanded to 720 so long date strings never get squished or cut off
+    const boxWidth = 720; 
     const boxHeight = (lines.length * 44) + 24; 
     const margin = 24; 
     
-    // POSITION FIX: Anchored directly to the top-left edge to keep text 100% visible on small mobile viewports
     const x = margin; 
     const y = margin; 
     
