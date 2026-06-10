@@ -189,8 +189,8 @@ takePictureBtn.addEventListener('click', async () => {
     context.font = 'bold 36px Arial'; 
     context.textBaseline = 'top'; 
     
-    // DIRECTION FIX: Explicitly tell canvas engine to treat text alignment coordinates from the right edge
-    context.textAlign = 'right';
+    // POSITION FIX: Return text alignment to standard left-alignment
+    context.textAlign = 'left';
     
     const lines = [ 
         `PRO: ${proNumber}`, 
@@ -212,19 +212,19 @@ takePictureBtn.addEventListener('click', async () => {
     const boxHeight = (lines.length * 44) + 24; 
     const margin = 24; 
     
-    // POSITIONING CALCULATOR: Lock layout securely to the top-right corner frame boundary
-    const x = canvas.width - margin; 
-    const y = margin; 
+    // POSITIONING CALCULATOR: Place the box perfectly in the bottom-left corner of the photo canvas
+    const x = margin; 
+    const y = canvas.height - boxHeight - margin; 
     
-    // Draw the background black box (needs to draw from left boundary point of its width calculation)
+    // Draw the background black box
     context.fillStyle = 'rgba(0, 0, 0, 0.65)'; 
-    context.fillRect(x - boxWidth, y, boxWidth, boxHeight); 
+    context.fillRect(x, y, boxWidth, boxHeight); 
     
-    // Print lines using right alignment spacing anchors
+    // Print lines over the black box container
     context.fillStyle = '#ffffff'; 
     lines.forEach((line, index) => { 
         const textY = y + 16 + (index * 44); 
-        context.fillText(line, x - 20, textY); 
+        context.fillText(line, x + 20, textY); 
     }); 
     
     // QUALITY UPGRADE: Changed JPEG compression from 0.85 to 0.98 for maximum pixel clarity
