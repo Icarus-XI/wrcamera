@@ -189,6 +189,9 @@ takePictureBtn.addEventListener('click', async () => {
     context.font = 'bold 36px Arial'; 
     context.textBaseline = 'top'; 
     
+    // DIRECTION FIX: Explicitly tell canvas engine to treat text alignment coordinates from the right edge
+    context.textAlign = 'right';
+    
     const lines = [ 
         `PRO: ${proNumber}`, 
         `DIM: ${length}" x ${width}" x ${height}"`, 
@@ -204,22 +207,24 @@ takePictureBtn.addEventListener('click', async () => {
         }
     });
     
-    // Calculate final box dimensions using the text size + custom padding padding
+    // Calculate final box dimensions using the text size + custom padding
     const boxWidth = maxTextWidth + 40; 
     const boxHeight = (lines.length * 44) + 24; 
     const margin = 24; 
     
-    // POSITIONING FIX: Anchor directly to the top-right corner safely
-    const x = canvas.width - boxWidth - margin; 
+    // POSITIONING CALCULATOR: Lock layout securely to the top-right corner frame boundary
+    const x = canvas.width - margin; 
     const y = margin; 
     
+    // Draw the background black box (needs to draw from left boundary point of its width calculation)
     context.fillStyle = 'rgba(0, 0, 0, 0.65)'; 
-    context.fillRect(x, y, boxWidth, boxHeight); 
-    context.fillStyle = '#ffffff'; 
+    context.fillRect(x - boxWidth, y, boxWidth, boxHeight); 
     
+    // Print lines using right alignment spacing anchors
+    context.fillStyle = '#ffffff'; 
     lines.forEach((line, index) => { 
         const textY = y + 16 + (index * 44); 
-        context.fillText(line, x + 20, textY); 
+        context.fillText(line, x - 20, textY); 
     }); 
     
     // QUALITY UPGRADE: Changed JPEG compression from 0.85 to 0.98 for maximum pixel clarity
