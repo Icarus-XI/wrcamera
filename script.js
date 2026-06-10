@@ -185,7 +185,7 @@ takePictureBtn.addEventListener('click', async () => {
     const height = heightInput.value || '0'; 
     const timestamp = new Date().toLocaleString(); 
     
-    // QUALITY UPGRADE: Scale text watermark sizes up to match crisp HD canvas pixel counts
+    // Set font style early so the canvas engine can accurately measure text pixel widths
     context.font = 'bold 36px Arial'; 
     context.textBaseline = 'top'; 
     
@@ -195,15 +195,25 @@ takePictureBtn.addEventListener('click', async () => {
         `DATE: ${timestamp}` 
     ]; 
     
-    // POSITION & WIDTH FIX: Box width expanded to 720 so long date strings never get squished or cut off
-    const boxWidth = 720; 
+    // DYNAMIC BOX SIZING: Measure each line and find the longest one automatically
+    let maxTextWidth = 0;
+    lines.forEach(line => {
+        const textWidth = context.measureText(line).width;
+        if (textWidth > maxTextWidth) {
+            maxTextWidth = textWidth;
+        }
+    });
+    
+    // Calculate final box dimensions using the text size + custom padding padding
+    const boxWidth = maxTextWidth + 40; 
     const boxHeight = (lines.length * 44) + 24; 
     const margin = 24; 
     
-    const x = margin; 
+    // POSITIONING FIX: Anchor directly to the top-right corner safely
+    const x = canvas.width - boxWidth - margin; 
     const y = margin; 
     
-    context.fillStyle = 'rgba(0, 0, 0, 0.70)'; 
+    context.fillStyle = 'rgba(0, 0, 0, 0.65)'; 
     context.fillRect(x, y, boxWidth, boxHeight); 
     context.fillStyle = '#ffffff'; 
     
